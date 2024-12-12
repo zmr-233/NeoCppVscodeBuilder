@@ -1,0 +1,66 @@
+{
+    "version": "2.0.0",
+    "options": {
+        "env": {
+          "CURFILE": "${workspaceFolder}/.bin/${relativeFileDirname}/${fileBasenameNoExtension}"
+        }
+     },
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "${workspaceFolder}/.vscode/build.sh",
+            "args": [
+                "${file}"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Generate gdbinit",
+            "type": "shell",
+            "command": "${workspaceFolder}/.vscode/generate_gdbinit.sh",
+            "args": [
+                "${file}"
+            ],
+            "group": "none",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build and Generate gdbinit",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Build",
+                "Generate gdbinit"
+            ]
+        },
+        {
+            "label": "Clean Build",
+            "type": "shell",
+            "command": "${workspaceFolder}/.vscode/clean.sh",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

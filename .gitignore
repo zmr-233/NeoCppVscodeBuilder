@@ -1,0 +1,17 @@
+*
+
+# 构建脚本
+!build.sh
+!cfg.conf
+!clean.sh
+!color_utils.sh
+!generate_gdbinit.sh
+
+# vscode工作区配置
+!launch.json
+!tasks.json
+
+# 项目文件
+!.gitignore
+!LICENSE
+!README.md
