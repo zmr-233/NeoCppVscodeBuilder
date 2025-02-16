@@ -14,6 +14,19 @@ get_config_file() {
     fi
 }
 
+read_compile_env() {
+    # 读取[compile_env]的命令并构建环境
+    while IFS= read -r line; do
+        # 如果遇到空行或[compile_options]，停止读取
+        if [[ -z "$line" || "$line" =~ ^\[ ]]; then
+            break
+        fi
+        # 执行命令行
+        INFO "执行编译环境命令: $line"
+        eval "$line" || { ERROR "命令失败: $line"; exit 1; }
+    done < <(awk '/^\[compile_env\]/{flag=1; next} /^\[/{flag=0} flag' "$CONFIG_FILE")
+}
+
 read_compile_options() {
     COMPILE_OPTIONS=$(awk '
         BEGIN { flag=0 }
@@ -87,6 +100,7 @@ main() {
     OUTPUT_DIR="${PWD}/.bin/${RELATIVE_PATH}"
 
     get_config_file
+    read_compile_env 
     read_compile_options
     read_libraries
     select_compiler

@@ -3,6 +3,12 @@
 # 引入颜色工具脚本
 source "$(dirname "$0")/color_utils.sh"
 
+# 定义关键变量
+INPUT_REDIRECT="OFF"
+OUTPUT_REDIRECT="OFF"
+ERROR_REDIRECT="OFF"
+FLAG_REDIRECT="OFF"
+
 check_arguments() {
     if [ -z "$1" ]; then
         ERROR "未指定源文件。"
@@ -33,19 +39,39 @@ get_config_file() {
 }
 
 read_redirect_settings() {
-    INPUT_REDIRECT="OFF"
-    OUTPUT_REDIRECT="OFF"
-    ERROR_REDIRECT="OFF"
-    FLAG_REDIRECT="OFF"
-
+    # 读取配置文件中的 [redirect] 部分并设置变量
+    local section_found=0
     while IFS='= ' read -r key value; do
-        case "$key" in
-            input) INPUT_REDIRECT="$value" ;;
-            output) OUTPUT_REDIRECT="$value" ;;
-            error) ERROR_REDIRECT="$value" ;;
-            flag) FLAG_REDIRECT="$value" ;;
-        esac
-    done < <(awk '/^\[redirect\]/,/^\[/{if($0 !~ /^\[|^#|^[[:space:]]*$/) print}' "$CONFIG_FILE")
+        key=$(echo $key | xargs)
+        value=$(echo $value | xargs)
+        if [[ $key == "[redirect]" ]]; then
+            section_found=1
+            continue
+        elif [[ $key =~ ^\[.*\] ]]; then
+            if [[ $section_found -eq 1 ]]; then
+                break
+            else
+                continue
+            fi
+        fi
+
+        if [[ $section_found -eq 1 && -n $key ]]; then
+            case $key in
+                input)
+                    INPUT_REDIRECT=$value
+                    ;;
+                output)
+                    OUTPUT_REDIRECT=$value
+                    ;;
+                error)
+                    ERROR_REDIRECT=$value
+                    ;;
+                flag)
+                    FLAG_REDIRECT=$value
+                    ;;
+            esac
+        fi
+    done < "$CONFIG_FILE"
 }
 
 generate_run_command() {
@@ -104,7 +130,7 @@ generate_gdbinit() {
         DEBUG_DIR="${PWD}/.debug/${RELATIVE_PATH}"
         GDBINIT_PATH="${DEBUG_DIR}/${SOURCE_NAME}.gdb"
         mkdir -p "$DEBUG_DIR"
-        cat > "$GDBINIT_PATH" <<EOL
+        cat >"$GDBINIT_PATH" <<EOL
 # GDB Debug Script: ${GDBINIT_PATH}
 # Binary File: ${BIN_PATH}
 ${RUN_CMD}
@@ -123,4 +149,3 @@ main() {
 }
 
 main "$@"
-
